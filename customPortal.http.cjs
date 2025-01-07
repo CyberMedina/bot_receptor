@@ -68,25 +68,30 @@ const start = (args) => {
     };
 
     polka()
-        .use(authMiddleware) // Aplica la autenticación a todas las rutas
-        .use(serve)
-        .get('qr.png', (_, res) => {
-            const qrSource = [
-                join(process.cwd(), `${name}.qr.png`),
-                join(__dirname, '..', `${name}.qr.png`),
-                join(__dirname, `${name}.qr.png`),
-            ].find((i) => existsSync(i));
+    .use(serve)
+    .get('/qr.png', authMiddleware, (_, res) => { // Aplica autenticación a esta ruta
+        const qrSource = [
+            join(process.cwd(), `${name}.qr.png`),
+            join(__dirname, '..', `${name}.qr.png`),
+            join(__dirname, `${name}.qr.png`),
+        ].find((i) => existsSync(i));
 
-            const qrMark = [
-                join(__dirname, 'dist', 'water-mark.png'),
-                join(__dirname, '..', 'dist', 'water-mark.png'),
-            ].find((i) => existsSync(i));
-            const fileStream = createReadStream(qrSource ?? qrMark);
+        const qrMark = [
+            join(__dirname, 'dist', 'water-mark.png'),
+            join(__dirname, '..', 'dist', 'water-mark.png'),
+        ].find((i) => existsSync(i));
 
-            res.writeHead(200, { 'Content-Type': 'image/png' });
-            fileStream.pipe(res);
-        })
-        .listen(port, () => banner());
+        const fileStream = createReadStream(qrSource ?? qrMark);
+
+        res.writeHead(200, { 'Content-Type': 'image/png' });
+        fileStream.pipe(res);
+    })
+    .get('/elPepeTest', (req, res) => { // Ruta sin autenticación
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Simón, sigue funcionando jaja');
+    })
+    .listen(port, () => banner());
+
 };
 
 var portal_http = start;
